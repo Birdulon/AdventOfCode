@@ -50,4 +50,4 @@ for k, v in GUARDs.items():
   if val > max_mins_2:
     max_mins_2 = val
     max_g_2 = k
-print(max_g_2*GUARDs[max_g_2].argmax())  # Part 1
+print(max_g_2*GUARDs[max_g_2].argmax())  # Part 2
