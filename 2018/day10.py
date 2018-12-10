@@ -23,9 +23,10 @@ from pyqtgraph.Qt import QtCore, QtGui
 import pyqtgraph as pg
 
 app = QtGui.QApplication([])
-win = pg.GraphicsLayoutWidget(show=True)
+win = pg.GraphicsLayoutWidget()
 win.resize(2000,600)
 win.setWindowTitle('Scatter Plot')
+win.show()
 
 p5 = win.addPlot(title="Scatter Plot")
 p5.plot(positions[:,:,0], pen=None, symbol='s', symbolPen=None, symbolSize=10, symbolBrush=(100, 100, 255, 250))
