@@ -39,10 +39,15 @@ max_power_s = 0
 max_idx_s = (0,0,0)
 for x in range(1, 298):
   for y in range(1, 298):
-    for s in range(4, 302-max(x, y)):
-      val = sum_square(x, y, s)
-      if val > max_power_s:
-        max_power_s = val
-        max_idx_s = (x, y, s)
+    A = fuel_cs[x-1, y-1]
+    Ds = fuel_cs[x+3:, y+3:].diagonal()
+    Bs = fuel_cs[x+3:, y-1][:len(Ds)]
+    Cs = fuel_cs[x-1, y+3:][:len(Ds)]
+    sums = Ds - Cs - Bs + A
+    idx = sums.argmax()
+    val = sums[idx]
+    if val > max_power_s:
+      max_power_s = val
+      max_idx_s = (x, y, 4+idx)
 
 print(max_idx_s)  # Part 2
