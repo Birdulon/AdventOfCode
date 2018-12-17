@@ -27,17 +27,19 @@ for xmin, xmax, ymin, ymax in zip(Xmin, Xmax, Ymin, Ymax):
 
 
 grid = init_grid.copy()
+drop_point_blacklist = set()
 
 
 def drop_water(source=spring, skip_cliffs=set()):
-  # TODO: The exit condition on this is borked and it will probably run forever. Killing it after like a minute and then running the things at the end gives the right answers.
-  # I'll probably revisit this properly later
+  if tuple(source) in drop_point_blacklist:
+    return False
   x, y = source
   # print('Dropping water from', source)
   surface = (grid[x, y:] > 0).argmax()
   if surface == 0:
     if (grid[x, y-1:] > 0).argmax() == 0:
       grid[x, y:] = -1
+      drop_point_blacklist.add(tuple(source))
     return False
     # raise ValueError('Out of bounds')
   surface_y = surface + y
@@ -76,6 +78,10 @@ def drop_water(source=spring, skip_cliffs=set()):
       grid[left_x:x, surface_y-1] = -1
     if cliff and (cliff not in skip_cliffs):
       cliffs.add((x + cliff, surface_y))
+
+  if cliffs and len([c for c in cliffs if tuple(c) in drop_point_blacklist]) == len(cliffs):
+    drop_point_blacklist.add(tuple(source))
+    return False
 
   succeeded = False
   while sum([drop_water(c) for c in cliffs]):
