@@ -16,73 +16,87 @@ Ymax = [int(re.findall(r'y=(?:\d+\.\.)?(\d+)', d)[0]) for d in data]
 y_min = min(Ymin)
 y_max = max(Ymax)
 
-x_max = 700
+x_min = min(Xmin) - 1
+x_max = 700 - x_min
 
-init_grid = np.zeros((x_max, y_max), dtype=np.int64)  # 0 = Sand, 1 = Clay, 2 = water
-spring = [500, 0]
+init_grid = np.zeros((x_max, y_max+1), dtype=np.int64)  # 0 = Sand, 1 = Clay, 2 = water, -1 = running water
+spring = [500-x_min, 0]
 
 for xmin, xmax, ymin, ymax in zip(Xmin, Xmax, Ymin, Ymax):
-  init_grid[xmin:xmax+1, ymin:ymax+1] = 1
+  init_grid[xmin-x_min:xmax+1-x_min, ymin:ymax+1] = 1
+
 
 grid = init_grid.copy()
 
-def drop_water(source=spring):
+
+def drop_water(source=spring, skip_cliffs=set()):
+  # TODO: The exit condition on this is borked and it will probably run forever. Killing it after like a minute and then running the things at the end gives the right answers.
+  # I'll probably revisit this properly later
   x, y = source
-  print('Dropping water from', source)
-  surface = grid[x, y:].argmax()
+  # print('Dropping water from', source)
+  surface = (grid[x, y:] > 0).argmax()
   if surface == 0:
+    if (grid[x, y-1:] > 0).argmax() == 0:
+      grid[x, y:] = -1
     return False
     # raise ValueError('Out of bounds')
-  surface_y = surface + y - 1
+  surface_y = surface + y
+  grid[x, y:surface_y] = -1
   # Find walls left and right
-  wall_left = (grid[x:0:-1, surface_y] > 0).argmax()
-  wall_right = (grid[x:, surface_y] > 0).argmax()
+  wall_left = (grid[x:0:-1, surface_y-1] > 0).argmax()
+  wall_right = (grid[x:, surface_y-1] > 0).argmax()
   if wall_left:
     left_x = x - wall_left + 1
-    cliff = (grid[x:left_x-1:-1, surface_y + 1] == 0).argmax()
+    cliff = (grid[x:left_x-1:-1, surface_y] <= 0).argmax()
     if cliff:
-      print('Found left wall but cliff present')
       wall_left = False
   if wall_right:
     right_x = x + wall_right #- 1
-    cliff = (grid[x:right_x, surface_y+1] == 0).argmax()
+    cliff = (grid[x:right_x, surface_y] <= 0).argmax()
     if cliff:
-      print('Found right wall but cliff present')
       wall_right = False
 
   if wall_right and wall_left:
     # Fill level of basin
-    grid[left_x:right_x, surface_y] = 2
+    grid[left_x:right_x, surface_y-1] = 2
     return True
-  sub_returns = False
+
+  cliffs = set()
   if not wall_left:
-    cliff = (grid[x:0:-1, surface_y+1] == 0).argmax()
-    if cliff:
-      # Drop off the left
-      sub_returns |= drop_water((x - cliff, surface_y))
+    cliff = int((grid[x:0:-1, surface_y] <= 0).argmax())
+    grid[x-cliff:x, surface_y-1] = -1
+    if wall_right:
+      grid[x:right_x, surface_y - 1] = -1
+    if cliff and (cliff not in skip_cliffs):
+      cliffs.add((x - cliff, surface_y))
   if not wall_right:
-    cliff = (grid[x:, surface_y+1] == 0).argmax()
-    if cliff:
-      # Drop off the right
-      sub_returns |= drop_water((x + cliff, surface_y))
+    cliff = int((grid[x:, surface_y] <= 0).argmax())
+    grid[x:x+cliff+1, surface_y-1] = -1
+    if wall_left:
+      grid[left_x:x, surface_y-1] = -1
+    if cliff and (cliff not in skip_cliffs):
+      cliffs.add((x + cliff, surface_y))
 
-  return sub_returns
-
+  succeeded = False
+  while sum([drop_water(c) for c in cliffs]):
+    succeeded = True
+  return succeeded
 
 
 def visualize():
   vis_rows = []
-  for row in range(y_max):
-    vis_rows.append(''.join([('.', '#', '~')[grid[col, row]] for col in range(x_max)]))
+  for row in range(y_max+1):
+    vis_rows.append(''.join([('.', '#', '~', '|')[grid[col, row]] for col in range(x_max)]))
 
   with open('day17-vis', 'w') as file:
     file.write('\n'.join(vis_rows))
 
-# arr is all clay shelves
+import sys
+sys.setrecursionlimit(10000)
 
-# drop_water((502, 35))
+while drop_water():
+  pass
 
-
-# 14572 low
-# 15414 low
-# 23233 low ??????
+print((grid==2).sum() + (grid==-1).sum() - y_min)  # Part 1
+print((grid==2).sum())  # Part 2
+visualize()
