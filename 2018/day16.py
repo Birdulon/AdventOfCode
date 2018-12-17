@@ -29,8 +29,8 @@ instructions = [oper_factory(op, False, imm) for op in bin_ops for imm in (False
              + [oper_factory(op, *imm) for op in comp_ops for imm in comp_imms]
 
 
-num_3_or_more = 0
-instruction_codes = {}
+samples_3_or_more = 0
+instruction_candidates = {}
 for before, opcodes, after in zip(numbers_pt1[::3], numbers_pt1[1::3], numbers_pt1[2::3]):
   possibilities = set()
   for op in instructions:
@@ -41,29 +41,28 @@ for before, opcodes, after in zip(numbers_pt1[::3], numbers_pt1[1::3], numbers_p
     except Exception:
       pass
   if len(possibilities) >= 3:
-    num_3_or_more += 1
+    samples_3_or_more += 1
 
-  if opcodes[0] in instruction_codes:
-    instruction_codes[opcodes[0]] &= possibilities
+  if opcodes[0] in instruction_candidates:
+    instruction_candidates[opcodes[0]] &= possibilities
   else:
-    instruction_codes[opcodes[0]] = set(possibilities)
+    instruction_candidates[opcodes[0]] = set(possibilities)
 
-print(num_3_or_more)  # Part 1
+print(samples_3_or_more)  # Part 1
 
-while sum([len(i) for i in instruction_codes.values()]) > len(instructions):
-  for code, candidates in instruction_codes.items():
+instruction_codes = {}
+while instruction_candidates:
+  for code, candidates in instruction_candidates.items():
     if len(candidates) == 1:
-      for code2 in [c for c in instruction_codes if c != code]:
-        instruction_codes[code2] -= candidates
-instruction_codes = {k: tuple(s)[0] for k, s in instruction_codes.items()}
+      instruction_codes[code] = tuple(candidates)[0]
+      for code2 in [c for c in instruction_candidates if c != code]:
+        instruction_candidates[code2].discard(instruction_codes[code])
+      instruction_candidates.pop(code)
+      break  # Can't continue iterating on mutated sequence, also want to recheck start anyway
 
 regs = [0, 0, 0, 0]
 for i, opcodes in enumerate(numbers_pt2):
-  try:
-    regs = instruction_codes[opcodes[0]](regs, opcodes)
-  except Exception:
-    print(f'Line {i}: {regs}  {opcodes}')
-    raise
+  regs = instruction_codes[opcodes[0]](regs, opcodes)
 
 print(regs)  # Part 2 is first number
 
