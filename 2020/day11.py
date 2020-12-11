@@ -10,8 +10,8 @@ def sim_step(seatmap, seatfilled):
     src = dir_slices[(i+4)%8]
     neighbours[dst] += seatfilled[src]
   output = seatfilled.copy()
-  output[np.logical_and(seatfilled==True, neighbours>=4)] = False
-  output[np.logical_and(seatfilled==False, np.logical_and(neighbours==0, seatmap==True))] = True
+  output[(seatfilled==True) & (neighbours>=4)] = False
+  output[(seatfilled==False) & (neighbours==0) & (seatmap==True)] = True
   return output
 
 occupied_seats = seatmap & False
@@ -36,8 +36,8 @@ def sim_step_los(seatmap, seatfilled):
           break
     neighbours[dst] += fill2[src]
   output = seatfilled.copy()
-  output[np.logical_and(seatfilled==True, neighbours>=5)] = False
-  output[np.logical_and(seatfilled==False, np.logical_and(neighbours==0, seatmap==True))] = True
+  output[(seatfilled==True) & (neighbours>=5)] = False
+  output[(seatfilled==False) & (neighbours==0) & (seatmap==True)] = True
   return output
 
 occupied_seats = seatmap & False
