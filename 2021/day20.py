@@ -1,6 +1,6 @@
 import numpy as np
 
-def inv_reduce(func, arg, n):
+def unfold(func, arg, n):
     for _ in range(n):
         arg = func(arg)
         yield arg
@@ -22,6 +22,6 @@ def visualize(array):
     print('\n'.join(''.join(['.','#'][c] for c in row) for row in array))
 
 
-simulated_lights = [t.sum() for t in inv_reduce(sample, np.pad(input_arr, 51), 50)]
+simulated_lights = [t.sum() for t in unfold(sample, np.pad(input_arr, 51), 50)]
 print('Part 1: Lights after 2 enhancements:', simulated_lights[2-1])
 print('Part 2: Lights after 50 enhancements:', simulated_lights[50-1])
