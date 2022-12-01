@@ -1,6 +1,9 @@
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
+val filename = "day1-input"
+
+
 class Elf:
 	var foodCalories = List[Int]()
 	var totalCalories = 0
@@ -8,10 +11,6 @@ class Elf:
 	def calculateTotalCalories(): Int =
 		totalCalories = foodCalories.sum
 		totalCalories
-end Elf
-
-
-val filename = "day1-input"
 
 
 @main def main() =
