@@ -6,16 +6,20 @@
     (get [3 6 0] (mod (- our-move their-move) 3)))
 (defn part-1-round-score
     [move-pair]
-    (let [[opposing-move our-move] move-pair]
-        (def op (get move-map opposing-move))
-        (def us (get move-map our-move))
+    (let [
+        [opposing-move our-move] move-pair
+        op (get move-map opposing-move)
+        us (get move-map our-move)
+        ]
         (+ (draw-win-lose-score us op) us)))
 (println (reduce + (map part-1-round-score move-pairs)))  ; Part 1
 (defn part-2-round-score
     [move-pair]
-    (let [[opposing-move our-move] move-pair]
-        (def op (get move-map opposing-move))
-        (def us-move-offset (- (get move-map our-move) 2))
-        (def us (+ (mod (+ (- op 1) us-move-offset) 3) 1))
+    (let [
+        [opposing-move our-move] move-pair
+        op (get move-map opposing-move)
+        us-move-offset (- (get move-map our-move) 2)
+        us (+ (mod (+ (- op 1) us-move-offset) 3) 1)
+        ]
         (+ (draw-win-lose-score us op) us)))
 (println (reduce + (map part-2-round-score move-pairs)))  ; Part 2
