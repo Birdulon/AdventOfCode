@@ -7,7 +7,7 @@ import tables
 proc `%%` (a: int, b: int): int = floor_mod a, b
 
 let move_map = to_table {'A': 1, 'B': 2, 'C': 3, 'X': 1, 'Y': 2, 'Z': 3}
-let rounds = split_lines strip read_file "day2-input"
+let rounds = split_lines strip read_file "input/2"
 
 proc round_score(us: int, them: int): int = us + [3, 6, 0][(us-them) %% 3]
 

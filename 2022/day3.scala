@@ -9,7 +9,7 @@ def priorityScore(c: Char): Int = c match
 
 
 @main def main() =
-	val inputLines = Source.fromFile("day3-input").getLines.toArray  // Can't leave it lazy as Part 1 will consume it
+	val inputLines = Source.fromFile("input/3").getLines.toArray  // Can't leave it lazy as Part 1 will consume it
 
 	// Part 1 - find items common between first half and second half of each line
 	println(inputLines.map(line =>

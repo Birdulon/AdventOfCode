@@ -1,5 +1,5 @@
 (require '[clojure.string :as str])
-(def filename "day2-input")
+(def filename "input/2")
 (def move-pairs (map #(str/split % #" ") (str/split-lines (slurp filename))))
 (def move-map {"A" 1 "B" 2 "C" 3 "X" 1 "Y" 2 "Z" 3})
 (defn draw-win-lose-score [our-move their-move]

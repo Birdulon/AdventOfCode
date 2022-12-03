@@ -3,7 +3,7 @@ import strutils
 import sugar
 from algorithm import sorted
 
-let inputString = strip readFile "day1-input"
+let inputString = strip readFile "input/1"
 let elfStrings = split(inputString, "\n\n")
 let elfRations = collect newSeq:
     for elf in elfStrings: collect newSeq:

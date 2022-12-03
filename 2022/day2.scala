@@ -27,7 +27,7 @@ def resultScore(a: RPS, b: RPS) = a <=> b match
 val moveMap = Map("A"->RPS.Rock, "B"->RPS.Paper, "C"->RPS.Scissors, "X"->RPS.Rock, "Y"->RPS.Paper, "Z"->RPS.Scissors)
 
 @main def main() =
-	val strategyGuide = Source.fromFile("day2-input").getLines.map(_.split(" ")).toArray  // Can't leave it lazy as Part 1 will consume it
+	val strategyGuide = Source.fromFile("input/2").getLines.map(_.split(" ")).toArray  // Can't leave it lazy as Part 1 will consume it
 	// val strategyGuide = Source.fromString("A Y\nB X\nC Z\n").getLines.map(_.split(" ")).toArray
 
 	// Part 1 - evaluate all moves in the guide using moveMap and tally score

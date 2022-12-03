@@ -1,7 +1,7 @@
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
-val filename = "day1-input"
+val filename = "input/1"
 
 
 class Elf:
@@ -22,9 +22,6 @@ class Elf:
 		else
 			elves.last.foodCalories = line.toInt :: elves.last.foodCalories
 	elves.last.calculateTotalCalories()
-
-	// for (elf <- elves)
-	// 	println(s"${elf.totalCalories}: ${elf.foodCalories}")
 
 	// Part 1 solution: Total calories held by elf with the most total calories
 	println(s"${elves.map(elf => elf.totalCalories).max}")

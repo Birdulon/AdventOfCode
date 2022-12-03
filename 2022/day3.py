@@ -1,4 +1,4 @@
-with open('day3-input', 'r') as file:
+with open('input/3', 'r') as file:
     input = file.read().strip().split('\n')
 
 def prio(character):

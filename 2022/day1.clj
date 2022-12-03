@@ -1,5 +1,5 @@
 (require '[clojure.string :as str])
-(def filename "day1-input")
+(def filename "input/1")
 (def elves-rations (map #(map read-string %) (map str/split-lines (str/split (slurp filename) #"\n\n"))))
 (def elves-totals (map #(reduce + %) elves-rations))
 (def sorted-totals (sort elves-totals))
