@@ -29,10 +29,6 @@
     (if (<= (count sequence) num)
     [sequence]
     (let [[head tail] (split-at num sequence)] (lazy-seq (cons head (chunker tail num))))))
-(defn three-elves [lines] (
-    let [
-        sets (map set lines)
-        common (apply clojure.set/intersection sets)
-    ]
-    (priority (first common))))
+(defn three-elves [lines]
+    (priority (first (apply clojure.set/intersection (map set lines)))))
 (println (reduce + (map three-elves (chunker elves 3))))
