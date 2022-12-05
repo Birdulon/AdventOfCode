@@ -2,8 +2,6 @@ import scala.io.Source
 
 val numberPattern = raw"((?:(?<!\d)-)?\d+)".r
 
-extension (s: String) def splitHalf: (String, String) = (s.substring(0, s.length()/2), s.substring(s.length()/2))
-
 @main def main() =
 	val rangePairs: Array[(Range, Range)] = Source.fromFile("input/4").getLines
 		.map(line => numberPattern.findAllIn(line).map(_.toInt).toArray)
