@@ -16,13 +16,12 @@ extension (s: String) def partition2(sep: String = "\n\n", sep2 : String = "\n")
 	(ss(0).split(sep2), ss(1).split(sep2))
 
 extension (aos: Seq[String]) def transpose(reverseX: Boolean = false, reverseY: Boolean = false): Seq[String] =
-	val mapping: Function[Int, String] =
-		if reverseY then (i => aos.reverse.map(_.substring(i,i+1)).reduceLeft(_+_))
+	val mapping: Function[Int, String] = if reverseY
+		then (i => aos.reverse.map(_.substring(i,i+1)).reduceLeft(_+_))
 		else (i => aos.map(_.substring(i,i+1)).reduceLeft(_+_))
-	if reverseX then
-		(0 until aos(0).length).reverse.map(mapping)
-	else
-		(0 until aos(0).length).map(mapping)
+	if reverseX
+		then (0 until aos(0).length).reverse.map(mapping)
+		else (0 until aos(0).length).map(mapping)
 
 def getStacksString(stacks: Map[Int, Stack[Char]]): String = stacks.keys.toBuffer.sorted.map(stacks(_).last.toString).reduceLeft(_+_)
 
@@ -37,23 +36,14 @@ def getStacksString(stacks: Map[Int, Stack[Char]]): String = stacks.keys.toBuffe
 
 	var stacks: Map[Int, Stack[Char]] = stacks_s.map((k,v) => (k, v.toCharArray.to(Stack))).toMap
 	for order <- orders do
-		val (amount, i_source, i_dest) = (order(0), order(1), order(2))
-		val source = stacks(i_source)
-		val dest = stacks(i_dest)
-		// println(s"Moving $amount from ${source.mkString} to ${dest.mkString}")
-		// print(s"Doing amount $amount : ")
+		val (amount, source, dest) = (order(0), stacks(order(1)), stacks(order(2)))
 		for _ <- 1 to amount do
 			dest.append(source.removeLast())
-			// print(". ")
-		// print("\n")
-		// println(s"Moved $amount from ${source.mkString} to ${dest.mkString}")
 	println(s"Part 1: ${getStacksString(stacks)}")
 
 	stacks = stacks_s.map((k,v) => (k, v.toCharArray.to(Stack))).toMap
 	for order <- orders do
-		val (amount, i_source, i_dest) = (order(0), order(1), order(2))
-		val source = stacks(i_source)
-		val dest = stacks(i_dest)
+		val (amount, source, dest) = (order(0), stacks(order(1)), stacks(order(2)))
 		dest.appendAll(source.takeRight(amount))
 		source.dropRightInPlace(amount)
 	println(s"Part 2: ${getStacksString(stacks)}")
