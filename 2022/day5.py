@@ -1,13 +1,10 @@
-import re
-numbers_pattern = re.compile(r'((?:(?<!\d)-)?\d+)')
+from helpers import *
 
 with open('input/5', 'r') as file:
     input_stacks, _, input_orders = file.read().strip().partition('\n\n')
 
-input_stacks_split = input_stacks.split('\n')
-input_stacks_transposed = [''.join(l[i] for l in input_stacks_split[::-1]).strip(' []') for i in range(len(input_stacks_split[0]))]
-starting_stack_strings = {int(l[0]):l[1:] for l in input_stacks_transposed if len(l) > 0}
-order_numbers = [[int(x) for x in numbers_pattern.findall(line)] for line in input_orders.split('\n')]
+starting_stack_strings = {int(l[0]):l[1:] for l in transpose_array_of_strings(input_stacks.split('\n'), reverse_y=True, strip=' []') if len(l) > 0}
+order_numbers = lines_to_numbers(input_orders.split('\n'))
 
 stacks = {k:[c for c in v] for k,v in starting_stack_strings.items()}
 for (num, source, dest) in order_numbers:
