@@ -11,7 +11,7 @@ order_numbers = [[int(x) for x in numbers_pattern.findall(line)] for line in inp
 
 stacks = {k:[c for c in v] for k,v in starting_stack_strings.items()}
 for (num, source, dest) in order_numbers:
-    for i in range(0, num):
+    for i in range(num):
         stacks[dest].append(stacks[source].pop())
 print('Part 1: ' + ''.join(s[-1] for s in stacks.values()))
 
