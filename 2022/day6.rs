@@ -38,33 +38,33 @@ fn find_first_unique_runs(s: &Vec<u8>) -> (Int, Int) {
 	let mut four = 0;
 	let mut fourteen = 0;
 	let mut masks: [u32; 4096] = [0; 4096];
-	for i in 0..s.len() {
+	for i in 0..4096 {
 		masks[i] = 1 << (s[i]-b'a');
 	}
 	let mut m: [u32; 4096] = masks.clone();
 	for n in 1..4 {
-		for i in n..s.len() {
+		for i in n..4096 {
 			m[i] |= masks[i-n];
 		}
 	}
-	for i in 4..s.len() {
+	for i in 4..4096 {
 		if m[i].count_ones() == 4 {
 			four = i;
 			break;
 		}
 	}
 	for n in 4..14 {
-		for i in n..s.len() {
+		for i in n..4096 {
 			m[i] |= masks[i-n];
 		}
 	}
-	for i in (four+9)..s.len() {
+	for i in (four+9)..4096 {
 		if m[i].count_ones() == 14 {
 			fourteen = i;
 			break;
 		}
 	}
-	return (four, fourteen);
+	return (four+1, fourteen+1);
 }
 
 fn run_once(s: &Vec<u8>) {
