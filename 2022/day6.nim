@@ -34,10 +34,26 @@ proc find_first(n: int, skip: int = 0): int =
             return i
     return -1
 
+proc string_no_duplicate_chars_copyless(s: string, i: int, n: int): bool =
+    # 1M iterations: nim r -d:danger day6.nim  22.70s user 0.13s system 97% cpu 23.412 total
+    let lower = i-n+1
+    for j in countdown(i, lower+1):
+        let c = s[j]
+        for k in countdown(j-1, lower):
+            if c == s[k]:
+                return false
+    return true
+
+proc find_first_copyless(n: int, skip: int = 0): int =
+    for i in max(n, skip)..<line.len:
+        if string_no_duplicate_chars_copyless(line, i, n):
+            return i
+    return -1
+
 var four = 0
 var fourteen = 0
 for i in 1..1000000:
-    four = find_first 4
-    fourteen = find_first(14, four)
+    four = find_first_copyless 4
+    fourteen = find_first_copyless(14, four)
 echo four
 echo fourteen
