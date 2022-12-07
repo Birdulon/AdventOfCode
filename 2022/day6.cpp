@@ -1,5 +1,6 @@
 #include <bit>
 #include <cinttypes>
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -80,36 +81,46 @@ fourteen_found:
 	return std::pair<size_t, size_t>(four+2, fourteen+8);
 }
 
-void run_once(std::vector<uint8_t> *s) {
-	size_t four = find_first_unique_run(s, 4, 4);
-	size_t fourteen = find_first_unique_run(s, 14, four);
-	std::cout << "Part 1: " << four << '\n';
-	std::cout << "Part 2: " << fourteen << '\n';
-}
+int main(int argc, char **argv) {
+	size_t iterations = 1000000;
+	auto filename = "input/6";
+	switch(argc) {
+		case 3:  // a.out filename iterations
+			iterations = std::stoi(argv[2]);
+			// std::cout << "Set iterations to: " << iterations << '\n';  // fallthrough
+		case 2:  // a.out filename
+			filename = argv[1];
+			// std::cout << "Set filename to: " << filename << '\n';
+		default:
+			break;
+	}
 
-void run_many(std::vector<uint8_t> *s, size_t iterations) {
+	auto input_file = std::ifstream(filename, std::ios::binary | std::ios::ate);
+	const std::streamoff eof_position = static_cast<std::streamoff>(input_file.tellg());
+	auto s = std::vector<uint8_t>(eof_position);
+	input_file.seekg(0, std::ios::beg);
+	input_file.read(reinterpret_cast<char*>(s.data()), eof_position);
+
 	size_t volatile four = 0;  // Don't you dare optimize out the iterations!
 	size_t volatile fourteen = 0;
 	std::cout << "Running " << iterations << " iterations:\n";
+	auto clock = std::chrono::high_resolution_clock();
+	auto t0 = clock.now();
 	for (size_t i = 0; i<iterations; i++) {
-		// four = find_first_unique_run(s, 4, 4);
-		// fourteen = find_first_unique_run(s, 14, four);
-		std::pair<size_t, size_t> result = find_first_unique_runs(s);
+		// four = find_first_unique_run(&s, 4, 4);
+		// fourteen = find_first_unique_run(&s, 14, four);
+		auto result = find_first_unique_runs(&s);
 		four = result.first;
 		fourteen = result.second;
 	}
+	auto t1 = clock.now();
+	auto delta = t1 - t0;
+	auto per_iteration = delta / iterations;
 	std::cout << "Part 1: " << four << '\n';
 	std::cout << "Part 2: " << fourteen << '\n';
-	std::cout << "Completed " << iterations << " iterations\n";
-}
-
-int main() {
-	std::ifstream input_file("input/6", std::ios::binary | std::ios::ate);
-	const std::streamoff eof_position = static_cast<std::streamoff>(input_file.tellg());
-	std::vector<uint8_t> input = std::vector<uint8_t>(eof_position);
-	input_file.seekg(0, std::ios::beg);
-	input_file.read(reinterpret_cast<char*>(input.data()), eof_position);
-
-	// run_once(&input);
-	run_many(&input, 10000000);
+	std::cout << "Completed " << iterations << " iterations in "
+		<< std::chrono::duration_cast<std::chrono::milliseconds>(delta).count()
+		<< "ms (~"
+		<< std::chrono::duration_cast<std::chrono::nanoseconds>(per_iteration).count()
+		<< "ns each)\n";
 }
