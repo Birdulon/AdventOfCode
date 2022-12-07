@@ -5,9 +5,12 @@
 #include <iostream>
 #include <vector>
 
+const size_t BATCH_SIZE = 64;
+const size_t BATCH_NUM = 4096/BATCH_SIZE;
+
 bool substring_unique_copyless(std::vector<uint8_t> *s, size_t right, size_t length) {
 	for (size_t i = (right-length); i<right; i++) {
-		uint8_t c = (*s)[i];  //s[i];
+		uint8_t c = (*s)[i];
 		for (size_t j = (i+1); j<right; j++) {
 			if ((*s)[j] == c) {
 				return false;
@@ -28,8 +31,6 @@ size_t find_first_unique_run(std::vector<uint8_t> *s, size_t num, size_t skip) {
 
 
 std::pair<size_t, size_t> find_first_unique_runs(std::vector<uint8_t> *s) {
-	const size_t BATCH_SIZE = 8;
-	const size_t BATCH_NUM = 4096/BATCH_SIZE;
 	size_t four = 0;
 	size_t fourteen = 0;
 	uint32_t masks[4096];
@@ -103,7 +104,7 @@ int main(int argc, char **argv) {
 
 	size_t volatile four = 0;  // Don't you dare optimize out the iterations!
 	size_t volatile fourteen = 0;
-	std::cout << "Running " << iterations << " iterations:\n";
+	std::cout << "Running " << iterations << " iterations with batch size " << BATCH_SIZE << ":\n";
 	auto clock = std::chrono::high_resolution_clock();
 	auto t0 = clock.now();
 	for (size_t i = 0; i<iterations; i++) {
