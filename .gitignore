@@ -1,0 +1,11 @@
+.clj-kondo
+.bsp
+.idea
+.ipynb_checkpoints
+.lsp
+.metals
+__pycache__
+$*
+target
+*.out
+*.jar
