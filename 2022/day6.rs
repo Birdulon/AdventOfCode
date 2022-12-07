@@ -51,11 +51,13 @@ fn find_first_unique_runs(s: &Vec<u8>) -> (Int, Int) {
 	for i in 0..(4096-1) {
 		masks[i] |= masks[i+1];
 	}
+	// Turn masks2 into masks4. Indices are now +3.
+	for i in 0..(4096-3) {
+		masks[i] |= masks[i+2];
+	}
 	'four_loop: for batch in 1..(BATCH_NUM) {
 		for i in 0..BATCH_SIZE {
-			let idx = batch*BATCH_SIZE + i;
-			scratch_masks[i] = masks[idx] | masks[idx-2];
-			scratch_masks_bits[i] = scratch_masks[i].count_ones() as u8;
+			scratch_masks_bits[i] = masks[batch*BATCH_SIZE + i].count_ones() as u8;
 		}
 		for i in 0..BATCH_SIZE {
 			if scratch_masks_bits[i] == 4 {
@@ -63,10 +65,6 @@ fn find_first_unique_runs(s: &Vec<u8>) -> (Int, Int) {
 				break 'four_loop;
 			}
 		}
-	}
-	// Turn masks2 into masks4. Indices are now +3.
-	for i in four..(4096-3) {
-		masks[i] |= masks[i+2];
 	}
 	// Turn masks4 into masks8. Indices are now +7.
 	for i in four..(4096-7) {
@@ -86,7 +84,7 @@ fn find_first_unique_runs(s: &Vec<u8>) -> (Int, Int) {
 			}
 		}
 	}
-	return (four+2, fourteen+8);
+	return (four+4, fourteen+8);
 }
 
 fn main() {
