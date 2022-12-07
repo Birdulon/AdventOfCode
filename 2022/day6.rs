@@ -35,37 +35,56 @@ fn mask_to_string(mask: u32) -> String {
 }
 
 fn find_first_unique_runs(s: &Vec<u8>) -> (Int, Int) {
-	let mut four = 0;
-	let mut fourteen = 0;
+	const BATCH_SIZE: Int = 8;
+	const BATCH_NUM: Int = 4096/BATCH_SIZE;
+	let mut four: Int = 0;
+	let mut fourteen: Int = 0;
 	let mut masks: [u32; 4096] = [0; 4096];
+	let mut scratch_masks: [u32; BATCH_SIZE] = [0; BATCH_SIZE];
+	let mut scratch_masks_bits: [u8; BATCH_SIZE] = [0; BATCH_SIZE];
 	for i in 0..4096 {
 		masks[i] = 1 << (s[i]-b'a');
 	}
-	let mut masks2: [u32; 4096] = masks.clone();
-	for i in 1..4096 {
-		masks2[i] |= masks[i-1];
+	// Turn masks into masks2. Indices are now +1.
+	for i in 0..(4096-1) {
+		masks[i] |= masks[i+1];
 	}
-	for i in 4..4096 {
-		// let mut mask = masks[i];
-		// for j in 1..4 {mask |= masks[i-j];}
-		let mut mask = masks2[i];
-		for j in 1..2 {mask |= masks2[i-j*2];}
-		if mask.count_ones() == 4 {
-			four = i;
-			break;
+	'four_loop: for batch in 1..(BATCH_NUM) {
+		for i in 0..BATCH_SIZE {
+			let idx = batch*BATCH_SIZE + i;
+			scratch_masks[i] = masks[idx] | masks[idx-2];
+			scratch_masks_bits[i] = scratch_masks[i].count_ones() as u8;
+		}
+		for i in 0..BATCH_SIZE {
+			if scratch_masks_bits[i] == 4 {
+				four = batch*BATCH_SIZE + i;
+				break 'four_loop;
+			}
 		}
 	}
-	for i in (four+9)..4096 {
-		// let mut mask = masks[i];
-		// for j in 1..14 {mask |= masks[i-j];}
-		let mut mask = masks2[i];
-		for j in 1..7 {mask |= masks2[i-j*2];}  // (2..14).step_by(2) doesn't unroll, LLVM is garbage
-		if mask.count_ones() == 14 {
-			fourteen = i;
-			break;
+	// Turn masks2 into masks4. Indices are now +3.
+	for i in four..(4096-3) {
+		masks[i] |= masks[i+2];
+	}
+	// Turn masks4 into masks8. Indices are now +7.
+	for i in four..(4096-7) {
+		masks[i] |= masks[i+4];
+	}
+	'fourteen_loop: for batch in (four/BATCH_SIZE)..(BATCH_NUM) {
+		for i in 0..BATCH_SIZE {
+			let idx = batch*BATCH_SIZE + i;
+			// scratch_masks[i] = masks[idx] | masks[idx-4] | masks[idx-8] | masks[idx-10];
+			scratch_masks[i] = masks[idx] | masks[idx-6];
+			scratch_masks_bits[i] = scratch_masks[i].count_ones() as u8;
+		}
+		for i in 0..BATCH_SIZE {
+			if scratch_masks_bits[i] == 14 {
+				fourteen = batch*BATCH_SIZE + i;
+				break 'fourteen_loop;
+			}
 		}
 	}
-	return (four+1, fourteen+1);
+	return (four+2, fourteen+8);
 }
 
 fn run_once(s: &Vec<u8>) {
