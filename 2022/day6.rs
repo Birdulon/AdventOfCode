@@ -41,25 +41,26 @@ fn find_first_unique_runs(s: &Vec<u8>) -> (Int, Int) {
 	for i in 0..4096 {
 		masks[i] = 1 << (s[i]-b'a');
 	}
-	let mut m: [u32; 4096] = masks.clone();
-	for n in 1..4 {
-		for i in n..4096 {
-			m[i] |= masks[i-n];
-		}
+	let mut masks2: [u32; 4096] = masks.clone();
+	for i in 1..4096 {
+		masks2[i] |= masks[i-1];
 	}
 	for i in 4..4096 {
-		if m[i].count_ones() == 4 {
+		// let mut mask = masks[i];
+		// for j in 1..4 {mask |= masks[i-j];}
+		let mut mask = masks2[i];
+		for j in 1..2 {mask |= masks2[i-j*2];}
+		if mask.count_ones() == 4 {
 			four = i;
 			break;
 		}
 	}
-	for n in 4..14 {
-		for i in n..4096 {
-			m[i] |= masks[i-n];
-		}
-	}
 	for i in (four+9)..4096 {
-		if m[i].count_ones() == 14 {
+		// let mut mask = masks[i];
+		// for j in 1..14 {mask |= masks[i-j];}
+		let mut mask = masks2[i];
+		for j in 1..7 {mask |= masks2[i-j*2];}  // (2..14).step_by(2) doesn't unroll, LLVM is garbage
+		if mask.count_ones() == 14 {
 			fourteen = i;
 			break;
 		}
