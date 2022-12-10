@@ -1,21 +1,25 @@
 from numpy.typing import ArrayLike
-import browser_cookie3
-import datetime
 import numpy as np
 import re
 import requests
 
-today = datetime.date.today()
-day = today.day
-year = today.year
-def download_input(day: int = day):
-	filename = f'input/{day:02}'
-	r = requests.get(f"https://adventofcode.com/{year}/day/{day}/input", cookies=browser_cookie3.firefox())
-	if r.status_code != 200:
-		print(r)
-	else:
-		with open(filename,'w') as f:
-			f.write(r.text)
+try:
+	import datetime
+	today = datetime.date.today()
+	day = today.day
+	year = today.year
+
+	import browser_cookie3
+	def download_input(day: int = day):
+		filename = f'input/{day:02}'
+		r = requests.get(f"https://adventofcode.com/{year}/day/{day}/input", cookies=browser_cookie3.firefox())
+		if r.status_code != 200:
+			print(r)
+		else:
+			with open(filename,'w') as f:
+				f.write(r.text)
+except ModuleNotFoundError as mod:
+	print(f'{mod.args[0]}, automatic input fetching will not work.')
 
 numbers_pattern = re.compile(r'((?:(?<!\d)-)?\d+)')
 
