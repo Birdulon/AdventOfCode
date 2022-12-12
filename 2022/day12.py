@@ -69,14 +69,5 @@ def make_reversed_cell_costs(position, heightmap):
 heightmap, start, end = make_heightmap(lines)
 rev_costs = make_reversed_cell_costs(end, heightmap)
 
-start_score = rev_costs[*start]
-print(f'Part 1: {start_score}')
-start_candidates = {tuple(pos) for pos in np.transpose(np.nonzero(heightmap == 0))}
-best_candidate = start
-best_score = start_score
-for candidate in start_candidates:
-    score = rev_costs[*candidate]
-    if score < best_score:
-        best_candidate = candidate
-        best_score = score
-print(f'Part 2: start at {best_candidate}: cost of {best_score}')
+print(f'Part 1: {rev_costs[*start]}')
+print(f'Part 2: {rev_costs[heightmap == 0].min()}')
