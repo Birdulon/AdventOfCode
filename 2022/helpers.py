@@ -2,6 +2,7 @@ from numpy.typing import ArrayLike
 import numpy as np
 from functools import cmp_to_key
 from math import prod
+from time import perf_counter_ns
 import re
 import requests
 import sys
@@ -39,6 +40,9 @@ def transpose_array_of_strings(aos: list[str], reverse_x = False, reverse_y = Fa
 def read_day(day: int) -> str:
 	with open(f'input/{day:02}', 'r') as file:
 		return file.read().strip()
+
+def print_time(name: str, ns: int):
+	print(f'{name} took {ns}ns = {ns/1000000:.2f}ms')
 
 dtype = np.int32
 directions_array = np.array([[1,0], [-1,0], [0,1], [0,-1]], dtype=dtype)

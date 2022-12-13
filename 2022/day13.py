@@ -1,5 +1,7 @@
 from helpers import *
+t0 = perf_counter_ns()
 list_pairs = [[eval(l) for l in pair.split('\n')] for pair in read_day(day).split('\n\n')]
+t1 = perf_counter_ns()
 
 def compare_lists(l1, l2) -> int:
 	for e1, e2 in zip(l1, l2):
@@ -39,6 +41,10 @@ def sort_all_and_find_dividers(list_pairs):
 	flat.sort(key=cmp_to_key(compare_lists))
 	return prod((flat.index(spacer) + 1 for spacer in spacers))
 
-
 print(f'Part 1: {count_ordered_pairs(list_pairs)}')
 print(f'Part 2: {sort_all_and_find_dividers(list_pairs)}')
+t2 = perf_counter_ns()
+
+print_time('Parsing', t1-t0)
+print_time('Computing', t2-t1)
+print_time('Full', t2-t0)
