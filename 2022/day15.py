@@ -30,13 +30,6 @@ def do_sensors(lines: list[str], row: int):
 # do_sensors(sample_lines, 20)
 do_sensors(lines, 2_000_000)
 
-def in_range_of_sensors(sensors, x, y):
-	for (i,j,d) in sensors:
-		if abs(x-i) + abs(y-j) <= d:
-			d2 = d - abs(x-i)
-			y_advance = (j+d2)-y + 1
-			return y_advance
-	return False
 
 def do_sensors_2(lines: list[str], search_space: int):
 	sensors = []
@@ -44,17 +37,27 @@ def do_sensors_2(lines: list[str], search_space: int):
 		x, y, nx, ny = line_to_numbers(line)
 		distance = abs(x-nx) + abs(y-ny)
 		sensors.append((x, y, distance))
-	sensors.sort(key=lambda x: x[0])
+	sensors.sort(key=lambda x: x[2])  # smallest distance first
+
+	def in_range_of_sensors(x: int, y: int) -> bool:
+		if not (0 <= x <= search_space and 0 <= y <= search_space):
+			return True
+		for (i,j,d) in sensors:
+			if abs(x-i) + abs(y-j) <= d:
+				return True
+		print(f'Part 2: Seen at ({x},{y}) = submit {x*4_000_000 + y}')
+		return False
 
 	# print(sensors)
-	for x in range(0, search_space+1):
-		y = 0
-		while y <= search_space:
-			y_skip = in_range_of_sensors(sensors, x, y)
-			if y_skip is False:
-				print(f'Part 2: Seen at ({x},{y}) = submit {x*4000000 + y}')
-				return
-			y += y_skip
+	for x0, y0, d in sensors:  # Iterate around perimeters
+		# print(x0, y0, d)
+		y_up = y0 + d + 1
+		y_down = y0 - d - 1
+		for i in range(d+1):
+			for x in (x0+i, x0-i):
+				for y in (y_down+i, y_up-i):
+					if not in_range_of_sensors(x, y):
+						return
 
 # do_sensors_2(sample_lines, 20)
 do_sensors_2(lines, 4_000_000)
