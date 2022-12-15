@@ -42,8 +42,6 @@ def do_sensors_2(lines: list[str], search_space: int):
 	sensors = []
 	for line in lines:
 		x, y, nx, ny = line_to_numbers(line)
-		if not ((0 <= x <= 4_000_000) and (0 <= y <= 4_000_000)):
-			continue
 		distance = abs(x-nx) + abs(y-ny)
 		sensors.append((x, y, distance))
 	sensors.sort(key=lambda x: x[0])
