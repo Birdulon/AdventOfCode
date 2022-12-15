@@ -40,7 +40,7 @@ def in_range_of_sensors(sensors, x, y):
 
 def do_sensors_2(lines: list[str], search_space: int):
 	sensors = []
-	for num, line in enumerate(lines, 1):
+	for line in lines:
 		x, y, nx, ny = line_to_numbers(line)
 		if not ((0 <= x <= 4_000_000) and (0 <= y <= 4_000_000)):
 			continue
