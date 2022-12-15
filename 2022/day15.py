@@ -46,11 +46,10 @@ def do_sensors_2(lines: list[str], search_space: int):
 			continue
 		distance = abs(x-nx) + abs(y-ny)
 		sensors.append((x, y, distance))
+	sensors.sort(key=lambda x: x[0])
 
 	# print(sensors)
 	for x in range(0, search_space+1):
-		# if x % 100_000 == 0:
-		# 	print(f'Processed {x} rows')
 		y = 0
 		while y <= search_space:
 			y_skip = in_range_of_sensors(sensors, x, y)
