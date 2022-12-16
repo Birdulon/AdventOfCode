@@ -14,6 +14,7 @@ Valve JJ has flow rate=21; tunnel leads to valve II
 '''.strip().split('\n')
 r = re.compile(r'Valve (\w+) has flow rate=(\d+); tunnels? leads? to valves? (.*)')
 
+
 def parse(lines):
 	valves = {}
 	for line in lines:
@@ -22,13 +23,14 @@ def parse(lines):
 			valves[valve] = (int(flow), connections.split(', '))
 	return(valves)
 
+
 def generate_path_costs(adjacent_valves: list[list]):
 	paths = np.full((len(adjacent_valves), len(adjacent_valves)), None, dtype=object)
 	for i, adj in enumerate(adjacent_valves):
 		paths[i,i] = []
 		for a in adj:
 			paths[i,a] = [a]
-	for _ in range(len(adjacent_valves)):
+	for _ in range(len(adjacent_valves)):  # Ensure full propagation
 		for i, adj in enumerate(adjacent_valves):  # Import routes from adj
 			for a in adj:
 				for j, p in enumerate(paths[a]):
@@ -36,16 +38,12 @@ def generate_path_costs(adjacent_valves: list[list]):
 						continue
 					if paths[i,j] is None or (len(p)+1) < len(paths[i,j]):
 						paths[i,j] = p + [i]
-	# print(paths)
-	path_costs = np.vectorize(len)(paths)
-	return path_costs
-
-T_MAX = 30
-times_called = np.zeros(T_MAX+1, dtype=dtype)
+	return np.vectorize(len)(paths)
 
 
-def simulate(valves: dict, t_max=T_MAX):
+def simulate(valves: dict, num_actors, t_max):
 	v_keys = {k:i for i,k in enumerate(sorted(valves.keys()))}
+	START = v_keys['AA']
 	adjacent_valves = []
 	for k in v_keys:
 		adj = valves[k][1]
@@ -54,41 +52,33 @@ def simulate(valves: dict, t_max=T_MAX):
 		else:
 			adjacent_valves.append([v_keys[adj]])
 	flows = [valves[k][0] for k in v_keys]
-	print(v_keys)
-	path_costs = generate_path_costs(adjacent_valves)
-	print(path_costs)
-
-	MAX_FLOW = sum(flows)
+	valve_open_costs = generate_path_costs(adjacent_valves) + 1
+	# print(v_keys)
+	# print(valve_open_costs)
 
 	def open_valve(valve: int, t: int) -> int:
 		return flows[valve] * (t_max - t)
 
-	def sim_step(position, closed_valves, t=0, vented=0, max_vented=0) -> int:
-		global times_called
-		times_called[t] += 1
-
-		if t >= t_max:
-			print(f'sim_step finished with {position} {closed_valves}, {vented}, {t}')
-			return max(max_vented, vented)
-		# if (vented + (sum((flows[i] for i in closed_valves)) * (t_max - t))) < max_vented:  # dead tree
-		# 	print(f'sim_step died with {position} {closed_valves}, {vented}, {t}')
-		# 	return max(max_vented, vented)
-
-		for target_valve in closed_valves:
-			if target_valve == position:  # Open valve where we are
-				tn = t+1
-				max_vented = sim_step(position, closed_valves - {position}, tn, vented + open_valve(target_valve, tn), max_vented)
-			else:  # Teleport to next valve, pass time as if we walked there, and open it at that time
-				tn = t + path_costs[position,target_valve] + 1
-				if tn < t_max:
-					max_vented = sim_step(target_valve, closed_valves - {target_valve}, tn, vented + open_valve(target_valve, tn), max_vented)
-		# print(f'sim_step unwound with {position} {closed_valves}, {vented}, {t}')
+	# Actor: (time, position)
+	def sim_step(actors: tuple[tuple[int,int]], closed_valves: set[int], t=0, vented=0, max_vented=0) -> int:
+		actors = sorted(actors)  # Sorts by time ascending
+		a_t, a_pos = actors[0]
+		# If the second one is also ready to act, it goes next in its own call
+		for n_pos in closed_valves:
+			# Teleport A to next valve, pass time as if we walked there, and open it at that time
+			n_a_t = t + valve_open_costs[a_pos,n_pos]
+			if n_a_t < t_max:
+				n_vented = vented + open_valve(n_pos, n_a_t)
+				n_closed = closed_valves - {n_pos}
+				n_actors = ((n_a_t, n_pos), *actors[1:])
+				n_t = min(a[0] for a in n_actors)  # Run the simulation again at the time when the next actor is ready (may be the same one as this!)
+				max_vented = sim_step(n_actors, n_closed, n_t, n_vented, max_vented)
 		return max(vented, max_vented)
 	default_closed = {i for i,flow in enumerate(flows) if flow > 0}
-	return sim_step(v_keys['AA'], default_closed)
+	return sim_step(((0,START),) * num_actors, default_closed)
 
-max_pressure_vented = simulate(parse(sample_lines))
-print(max_pressure_vented)
-print(times_called)
-max_pressure_vented = simulate(parse(lines))
-print(max_pressure_vented)
+print(f'Part 1 example: {simulate(parse(sample_lines), 1, 30)}')
+print(f'Part 1: {simulate(parse(lines), 1, 30)}')
+
+print(f'Part 2 example: {simulate(parse(sample_lines), 2, 26)}')
+print(f'Part 2: {simulate(parse(lines), 2, 26)}')
