@@ -41,12 +41,11 @@ def generate_path_costs(adjacent_valves: list[list]):
 	return path_costs
 
 T_MAX = 30
-times_called = np.zeros(T_MAX, dtype=dtype)
-def simulate(valves: dict):
-	# print(valves)
+times_called = np.zeros(T_MAX+1, dtype=dtype)
+
+
+def simulate(valves: dict, t_max=T_MAX):
 	v_keys = {k:i for i,k in enumerate(sorted(valves.keys()))}
-	# adjacent_valves = {k:v[1] for k,v in valves.items()}
-	# flows = {k:v[0] for k,v in valves.items()}
 	adjacent_valves = []
 	for k in v_keys:
 		adj = valves[k][1]
@@ -60,37 +59,36 @@ def simulate(valves: dict):
 	print(path_costs)
 
 	MAX_FLOW = sum(flows)
-	MAX_REMAINING = [i*MAX_FLOW for i in range(T_MAX, -1, -1)]
 
-	def sim_step(position, closed_valves, cur_flow=0, vented=0, t=0, max_vented=0) -> int:
+	def open_valve(valve: int, t: int) -> int:
+		return flows[valve] * (t_max - t)
+
+	def sim_step(position, closed_valves, t=0, vented=0, max_vented=0) -> int:
 		global times_called
 		times_called[t] += 1
 
-		t += 1
-		# cur_flow = MAX_FLOW - sum((flows[i] for i in closed_valves))
-		vented += cur_flow
-		if t >= T_MAX:
-			# print(f'sim_step finished with {position} {closed_valves}, {vented}, {t}')
+		if t >= t_max:
+			print(f'sim_step finished with {position} {closed_valves}, {vented}, {t}')
 			return max(max_vented, vented)
-		if (vented + MAX_REMAINING[t]) < max_vented:  # dead tree
-			# print(f'sim_step died with {position} {closed_valves}, {vented}, {t}')
-			return max_vented
+		# if (vented + (sum((flows[i] for i in closed_valves)) * (t_max - t))) < max_vented:  # dead tree
+		# 	print(f'sim_step died with {position} {closed_valves}, {vented}, {t}')
+		# 	return max(max_vented, vented)
 
-		if position in closed_valves:
-			max_vented = sim_step(position, closed_valves - {position}, cur_flow + flows[position], vented, t, max_vented)
 		for target_valve in closed_valves:
-			tn = min(t + path_costs[position,target_valve], T_MAX-1)
-			dt = tn - t - 1
-			max_vented = sim_step(target_valve, closed_valves, cur_flow, vented+dt*cur_flow, tn, max_vented)
-		if True:  #len(closed_valves) == 0:  # Wait it out
-			tn = T_MAX-1
-			dt = tn - t - 1
-			max_vented = sim_step(position, closed_valves, cur_flow, vented+dt*cur_flow, tn, max_vented)
-		return max_vented
-
-	return sim_step(v_keys['AA'], {i for i,flow in enumerate(flows) if flow > 0})
+			if target_valve == position:  # Open valve where we are
+				tn = t+1
+				max_vented = sim_step(position, closed_valves - {position}, tn, vented + open_valve(target_valve, tn), max_vented)
+			else:  # Teleport to next valve, pass time as if we walked there, and open it at that time
+				tn = t + path_costs[position,target_valve] + 1
+				if tn < t_max:
+					max_vented = sim_step(target_valve, closed_valves - {target_valve}, tn, vented + open_valve(target_valve, tn), max_vented)
+		# print(f'sim_step unwound with {position} {closed_valves}, {vented}, {t}')
+		return max(vented, max_vented)
+	default_closed = {i for i,flow in enumerate(flows) if flow > 0}
+	return sim_step(v_keys['AA'], default_closed)
 
 max_pressure_vented = simulate(parse(sample_lines))
 print(max_pressure_vented)
+print(times_called)
 max_pressure_vented = simulate(parse(lines))
 print(max_pressure_vented)
