@@ -5,7 +5,7 @@ val rootPattern = raw"\/(.*)".r
 def cd(cwd: String, to: String): String = to match
 	case rootPattern(absPath) => absPath  // Absolute path
 	case ".." => 
-		val i = cwd.lastIndexOf('/')
+		val i = cwd lastIndexOf '/'
 		if i < 0 then cwd else cwd.substring(0, i)  // Up one subfolder
 	case _ => s"$cwd/$to"
 
@@ -21,7 +21,7 @@ def cd(cwd: String, to: String): String = to match
 				cwd = cd(cwd, dir)
 				folders += cwd
 			case fileSizePattern(sizeStr, filename) =>
-				fileSizes += (s"$cwd/$filename" -> sizeStr.toInt)
+				fileSizes += s"$cwd/$filename" -> sizeStr.toInt
 			case _ => {}  // "$ ls", "dir ..."
 	// Very inefficient way of calculating folder sizes, but cute enough
 	val folderSizes = folders.map(f => (f, fileSizes.filter((k,v) => k startsWith s"$f/").values.sum)).toMap
