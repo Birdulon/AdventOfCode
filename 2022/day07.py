@@ -1,4 +1,4 @@
-with open('input/7', 'r') as file:
+with open('input/07', 'r') as file:
 	lines = file.read().strip().split('\n')
 pwd = []
 files = {}
