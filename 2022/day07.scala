@@ -15,14 +15,13 @@ def cd(cwd: String, to: String): String = to match
 	var cwd = ""  // We append the / at time of use
 	val folders = scala.collection.mutable.HashSet[String](cwd)
 	val fileSizes = scala.collection.mutable.HashMap[String, Int]()
-	for line <- inputLines do
-		line match
-			case cdPattern(dir) =>
-				cwd = cd(cwd, dir)
-				folders += cwd
-			case fileSizePattern(sizeStr, filename) =>
-				fileSizes += s"$cwd/$filename" -> sizeStr.toInt
-			case _ => {}  // "$ ls", "dir ..."
+	for line <- inputLines do line match
+		case cdPattern(dir) =>
+			cwd = cd(cwd, dir)
+			folders += cwd
+		case fileSizePattern(sizeStr, filename) =>
+			fileSizes += s"$cwd/$filename" -> sizeStr.toInt
+		case _ => {}  // "$ ls", "dir ..."
 	// Very inefficient way of calculating folder sizes, but cute enough
 	val folderSizes = folders.map(f => (f, fileSizes.filter((k,v) => k startsWith s"$f/").values.sum)).toMap
 
