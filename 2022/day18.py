@@ -46,20 +46,12 @@ def count_faces_2(coords: list[tuple[int,int,int]]):
 		field[x+1,y+1,z+1] = 1
 	field[flood(field, (0,0,0), connectivity=1)] = -1
 
-	surface_area = 0
-	for (x,y,z) in np.argwhere(field == 1):
-		if field[x+1,y,z] == -1:
-			surface_area += 1
-		if field[x-1,y,z] == -1:
-			surface_area += 1
-		if field[x,y+1,z] == -1:
-			surface_area += 1
-		if field[x,y-1,z] == -1:
-			surface_area += 1
-		if field[x,y,z+1] == -1:
-			surface_area += 1
-		if field[x,y,z-1] == -1:
-			surface_area += 1
+	surface_area  = np.logical_and(field[:-1,:,:] == 1, field[1:,:,:] == -1).sum()
+	surface_area += np.logical_and(field[1:,:,:] == 1, field[:-1,:,:] == -1).sum()
+	surface_area += np.logical_and(field[:,:-1,:] == 1, field[:,1:,:] == -1).sum()
+	surface_area += np.logical_and(field[:,1:,:] == 1, field[:,:-1,:] == -1).sum()
+	surface_area += np.logical_and(field[:,:,:-1] == 1, field[:,:,1:] == -1).sum()
+	surface_area += np.logical_and(field[:,:,1:] == 1, field[:,:,:-1] == -1).sum()
 	return surface_area
 
 
