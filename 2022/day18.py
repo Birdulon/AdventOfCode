@@ -29,12 +29,12 @@ def count_faces(coords: list[tuple[int,int,int]], count_gaps=True):
 	if not count_gaps:
 		field[flood(field, (0,0,0), connectivity=1)] = -1
 
-	surface_area  = np.logical_and(field[:-1,:,:] == 1, field[1:,:,:] == -1).sum()
-	surface_area += np.logical_and(field[1:,:,:] == 1, field[:-1,:,:] == -1).sum()
-	surface_area += np.logical_and(field[:,:-1,:] == 1, field[:,1:,:] == -1).sum()
-	surface_area += np.logical_and(field[:,1:,:] == 1, field[:,:-1,:] == -1).sum()
-	surface_area += np.logical_and(field[:,:,:-1] == 1, field[:,:,1:] == -1).sum()
-	surface_area += np.logical_and(field[:,:,1:] == 1, field[:,:,:-1] == -1).sum()
+	surface_area  = np.logical_and(field[:-1,:,:] == 1, field[ 1:,:,:] == -1).sum()
+	surface_area += np.logical_and(field[ 1:,:,:] == 1, field[:-1,:,:] == -1).sum()
+	surface_area += np.logical_and(field[:,:-1,:] == 1, field[:, 1:,:] == -1).sum()
+	surface_area += np.logical_and(field[:, 1:,:] == 1, field[:,:-1,:] == -1).sum()
+	surface_area += np.logical_and(field[:,:,:-1] == 1, field[:,:, 1:] == -1).sum()
+	surface_area += np.logical_and(field[:,:, 1:] == 1, field[:,:,:-1] == -1).sum()
 	return surface_area
 
 print(f'Part 1 (sample): {count_faces(sample_coords)}')
