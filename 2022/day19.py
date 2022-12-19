@@ -7,7 +7,7 @@ Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsid
 Blueprint 2: Each ore robot costs 2 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 8 clay. Each geode robot costs 3 ore and 12 obsidian.
 '''.strip().split('\n')
 
-maximum_potential = np.arange(32).cumsum()
+maximum_potential = np.arange(33, dtype=np.int8).cumsum()
 
 def bp_quality(line, t_max=24):
 	bp, cost_orebot_ore, cost_claybot_ore, cost_obsbot_ore, cost_obsbot_clay, cost_geodebot_ore, cost_geodebot_obs = line_to_numbers(line)
@@ -23,6 +23,7 @@ def bp_quality(line, t_max=24):
 		((0,0,1), obsbot_cost),
 		(None, geodebot_cost),
 	)
+	max_robots = np.array([max(cost_orebot_ore, cost_claybot_ore, cost_obsbot_ore, cost_geodebot_ore), cost_obsbot_clay, cost_geodebot_obs], dtype=np.int8)
 
 	search_stack = []
 	SEEN = set()
@@ -36,10 +37,15 @@ def bp_quality(line, t_max=24):
 	geodes_best = 0
 	while len(search_stack) > 0:
 		t, robot_counts, res_counts, geodes_total = search_stack.pop()
-		if (geodes_total + maximum_potential[t_max-t]) < geodes_best:
-			continue
 		if t < t_max:
+			if (geodes_total + maximum_potential[t_max-t]) < geodes_best:
+				continue
 			for inc, cost in robot_orders:
+				next_robots = robot_counts
+				if inc:
+					next_robots = robot_counts + inc
+					if np.any(next_robots > max_robots):
+						continue
 				mask = cost > 0  # Only look at resources within the cost
 				if np.any(robot_counts[mask] == 0):  # no robot no income, we can't just wait to build it
 					continue
@@ -51,20 +57,22 @@ def bp_quality(line, t_max=24):
 					if inc is None:  # Special case for Geodebots
 						add_state(nt, robot_counts, new_res, geodes_total+(t_max-nt))
 					else:
-						add_state(nt, robot_counts + inc, new_res, geodes_total)
+						add_state(nt, next_robots, new_res, geodes_total)
 		geodes_best = max(geodes_best, geodes_total)
 
 	quality = bp * geodes_best
 	print(f'Blueprint {bp}: max geodes {geodes_best}, quality number = {quality}')
 	return bp, geodes_best, quality
 
+def p2(line):
+	return bp_quality(line, 32)
 
 if __name__ == '__main__':
-	# with Pool(8) as p:
-	# 	# Maximize geodes in 24 minutes
-	# 	qual_tally = sum([quality for bp, max_geodes, quality in p.map(bp_quality, lines)])
-	# 	print(f'Part 1: {qual_tally}')
-	# 	max_prod = prod([max_geodes for bp, max_geodes, quality in p.map(lambda x: bp_quality(x, 32), lines[:3])])
-	# 	print(f'Part 2: {max_prod}')
-	qual_tally = sum((bp_quality(line)[-1] for line in lines))
-	print(f'Part 1: {qual_tally}')
+	with Pool(8) as p:
+		# Maximize geodes in 24 minutes
+		qual_tally = sum([quality for bp, max_geodes, quality in p.map(bp_quality, lines)])
+		print(f'Part 1: {qual_tally}')
+		max_prod = prod([max_geodes for bp, max_geodes, quality in p.map(p2, lines[:3])])
+		print(f'Part 2: {max_prod}')
+	# qual_tally = sum((bp_quality(line)[-1] for line in lines))
+	# print(f'Part 1: {qual_tally}')
