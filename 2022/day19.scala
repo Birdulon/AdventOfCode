@@ -29,6 +29,28 @@ def blueprintQuality(line: String, tMax: Int=24): (Int, Int, Int) =
 		if (totalGeodes + maxPossibleInXMinutes(tMax-t)) <= mostGeodes then return mostGeodes
 
 		var (dt, tn) = (0, 0)
+		// Try to make a Geode robot
+		if numRobots(2) > 0 then
+			dt = 1 max (((cost_geodebot_ore - numRes(0)) ceilDiv numRobots(0)) + 1)  // Must always spend at least 1 minute to build
+			dt = dt max (((cost_geodebot_obs - numRes(2)) ceilDiv numRobots(2)) + 1)  // Must always spend at least 1 minute to build
+			tn = t + dt
+			if tn < tMax then
+				val nextRes = (numRes zip numRobots).map((b,f) => b + f*dt).toArray
+				nextRes(0) -= cost_geodebot_ore
+				nextRes(2) -= cost_geodebot_obs
+				mostGeodes = mostGeodes max simStep(tn, numRobots, nextRes, totalGeodes + (tMax-tn), mostGeodes)
+		// Try to make an Obs robot
+		if numRobots(1) > 0 then
+			dt = 1 max (((cost_obsbot_ore - numRes(0)) ceilDiv numRobots(0)) + 1)  // Must always spend at least 1 minute to build
+			dt = dt max (((cost_obsbot_clay - numRes(1)) ceilDiv numRobots(1)) + 1)  // Must always spend at least 1 minute to build
+			tn = t + dt
+			if tn < (tMax-1) then  // any obsidian past that point is worthless
+				val nextRobots = numRobots.toArray
+				nextRobots(2) += 1
+				val nextRes = (numRes zip numRobots).map((b,f) => b + f*dt).toArray
+				nextRes(0) -= cost_obsbot_ore
+				nextRes(1) -= cost_obsbot_clay
+				mostGeodes = mostGeodes max simStep(tn, nextRobots, nextRes, totalGeodes, mostGeodes)
 		// Try to make an Ore robot
 		dt = 1 max (((cost_orebot_ore - numRes(0)) ceilDiv numRobots(0)) + 1)  // Must always spend at least 1 minute to build
 		tn = t + dt
@@ -47,28 +69,6 @@ def blueprintQuality(line: String, tMax: Int=24): (Int, Int, Int) =
 			val nextRes = (numRes zip numRobots).map((b,f) => b + f*dt).toArray
 			nextRes(0) -= cost_claybot_ore
 			mostGeodes = mostGeodes max simStep(tn, nextRobots, nextRes, totalGeodes, mostGeodes)
-		// Try to make an Obs robot
-		if numRobots(1) > 0 then
-			dt = 1 max (((cost_obsbot_ore - numRes(0)) ceilDiv numRobots(0)) + 1)  // Must always spend at least 1 minute to build
-			dt = dt max (((cost_obsbot_clay - numRes(1)) ceilDiv numRobots(1)) + 1)  // Must always spend at least 1 minute to build
-			tn = t + dt
-			if tn < (tMax-1) then  // any obsidian past that point is worthless
-				val nextRobots = numRobots.toArray
-				nextRobots(2) += 1
-				val nextRes = (numRes zip numRobots).map((b,f) => b + f*dt).toArray
-				nextRes(0) -= cost_obsbot_ore
-				nextRes(1) -= cost_obsbot_clay
-				mostGeodes = mostGeodes max simStep(tn, nextRobots, nextRes, totalGeodes, mostGeodes)
-		// Try to make a Geode robot
-		if numRobots(2) > 0 then
-			dt = 1 max (((cost_geodebot_ore - numRes(0)) ceilDiv numRobots(0)) + 1)  // Must always spend at least 1 minute to build
-			dt = dt max (((cost_geodebot_obs - numRes(2)) ceilDiv numRobots(2)) + 1)  // Must always spend at least 1 minute to build
-			tn = t + dt
-			if tn < tMax then
-				val nextRes = (numRes zip numRobots).map((b,f) => b + f*dt).toArray
-				nextRes(0) -= cost_geodebot_ore
-				nextRes(2) -= cost_geodebot_obs
-				mostGeodes = mostGeodes max simStep(tn, numRobots, nextRes, totalGeodes + (tMax-tn), mostGeodes)
 		return totalGeodes max mostGeodes
 
 	val mostGeodes = simStep(0, Vector(1,0,0).toArray, Vector(0,0,0).toArray)
