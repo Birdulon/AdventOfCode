@@ -35,7 +35,7 @@ def bp_quality(line, t_max=24):
 
 	add_state(0, np.array((1,0,0), dtype=np.int8), np.array((0,0,0), dtype=np.int8), 0)
 	geodes_best = 0
-	while len(search_stack) > 0:
+	while search_stack:
 		t, robot_counts, res_counts, geodes_total = search_stack.pop()
 		if t < t_max:
 			if (geodes_total + maximum_potential[t_max-t]) < geodes_best:
