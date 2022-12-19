@@ -18,6 +18,7 @@ def blueprintQuality(line: String, tMax: Int=24): (Int, Int, Int) =
 	val cost_geodebot_ore = nums(5)
 	val cost_geodebot_obs = nums(6)
 
+	val max_cost_ore = cost_orebot_ore max cost_claybot_ore max cost_obsbot_ore max cost_geodebot_ore
 
 	val maxPossibleInXMinutes = (0 to 32).toArray
 	for i <- 1 to 32 do
@@ -40,7 +41,7 @@ def blueprintQuality(line: String, tMax: Int=24): (Int, Int, Int) =
 				nextRes(2) -= cost_geodebot_obs
 				mostGeodes = mostGeodes max simStep(tn, numRobots, nextRes, totalGeodes + (tMax-tn), mostGeodes)
 		// Try to make an Obs robot
-		if numRobots(1) > 0 then
+		if numRobots(1) > 0 && numRobots(2) < cost_geodebot_obs then
 			dt = 1 max (((cost_obsbot_ore - numRes(0)) ceilDiv numRobots(0)) + 1)  // Must always spend at least 1 minute to build
 			dt = dt max (((cost_obsbot_clay - numRes(1)) ceilDiv numRobots(1)) + 1)  // Must always spend at least 1 minute to build
 			tn = t + dt
@@ -52,23 +53,25 @@ def blueprintQuality(line: String, tMax: Int=24): (Int, Int, Int) =
 				nextRes(1) -= cost_obsbot_clay
 				mostGeodes = mostGeodes max simStep(tn, nextRobots, nextRes, totalGeodes, mostGeodes)
 		// Try to make an Ore robot
-		dt = 1 max (((cost_orebot_ore - numRes(0)) ceilDiv numRobots(0)) + 1)  // Must always spend at least 1 minute to build
-		tn = t + dt
-		if tn < (tMax-1) then  // any ore past that point is worthless
-			val nextRobots = numRobots.toArray
-			nextRobots(0) += 1
-			val nextRes = (numRes zip numRobots).map((b,f) => b + f*dt).toArray
-			nextRes(0) -= cost_orebot_ore
-			mostGeodes = mostGeodes max simStep(tn, nextRobots, nextRes, totalGeodes, mostGeodes)
+		if numRobots(0) < max_cost_ore then
+			dt = 1 max (((cost_orebot_ore - numRes(0)) ceilDiv numRobots(0)) + 1)  // Must always spend at least 1 minute to build
+			tn = t + dt
+			if tn < (tMax-1) then  // any ore past that point is worthless
+				val nextRobots = numRobots.toArray
+				nextRobots(0) += 1
+				val nextRes = (numRes zip numRobots).map((b,f) => b + f*dt).toArray
+				nextRes(0) -= cost_orebot_ore
+				mostGeodes = mostGeodes max simStep(tn, nextRobots, nextRes, totalGeodes, mostGeodes)
 		// Try to make a Clay robot
-		dt = 1 max (((cost_claybot_ore - numRes(0)) ceilDiv numRobots(0)) + 1)  // Must always spend at least 1 minute to build
-		tn = t + dt
-		if tn < (tMax-2) then  // any clay past that point is worthless, needs to turn to obs
-			val nextRobots = numRobots.toArray
-			nextRobots(1) += 1
-			val nextRes = (numRes zip numRobots).map((b,f) => b + f*dt).toArray
-			nextRes(0) -= cost_claybot_ore
-			mostGeodes = mostGeodes max simStep(tn, nextRobots, nextRes, totalGeodes, mostGeodes)
+		if numRobots(1) < cost_obsbot_clay then
+			dt = 1 max (((cost_claybot_ore - numRes(0)) ceilDiv numRobots(0)) + 1)  // Must always spend at least 1 minute to build
+			tn = t + dt
+			if tn < (tMax-2) then  // any clay past that point is worthless, needs to turn to obs
+				val nextRobots = numRobots.toArray
+				nextRobots(1) += 1
+				val nextRes = (numRes zip numRobots).map((b,f) => b + f*dt).toArray
+				nextRes(0) -= cost_claybot_ore
+				mostGeodes = mostGeodes max simStep(tn, nextRobots, nextRes, totalGeodes, mostGeodes)
 		return totalGeodes max mostGeodes
 
 	val mostGeodes = simStep(0, Vector(1,0,0).toArray, Vector(0,0,0).toArray)
