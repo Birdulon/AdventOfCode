@@ -1,6 +1,7 @@
 from numpy.typing import ArrayLike
 import numpy as np
-from functools import cmp_to_key
+from functools import cmp_to_key, cache
+from itertools import permutations
 from math import prod
 from time import perf_counter_ns
 import re
