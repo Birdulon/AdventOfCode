@@ -11,7 +11,6 @@ struct list_node {
 
 void mix_right(struct list_node* node, long amount) {
 	struct list_node* new_prev = node->next;
-	amount %= INPUT_LENGTH-1;
 	// Pop from position
 	node->prev->next = node->next;
 	node->next->prev = node->prev;
@@ -29,7 +28,6 @@ void mix_right(struct list_node* node, long amount) {
 
 void mix_left(struct list_node* node, long amount) {
 	struct list_node* new_next = node->prev;
-	amount %= INPUT_LENGTH-1;
 	// Pop from position
 	node->prev->next = node->next;
 	node->next->prev = node->prev;
@@ -46,12 +44,22 @@ void mix_left(struct list_node* node, long amount) {
 }
 
 void mix(struct list_node* node) {
-	int amount = node->value;
-	if (amount > 0) {
-		mix_right(node, amount);
-	} else if (amount < 0) {
-		mix_left(node, -amount);
-	}  // Do nothing for 0
+	int forward_amount = node->value;
+	int reverse_amount;
+	const int mod = INPUT_LENGTH-1;
+	if (forward_amount == 0) return;  // Do nothing for 0
+	if (forward_amount > 0) {
+		forward_amount = forward_amount % mod;
+		reverse_amount = mod - forward_amount;
+	} else {
+		reverse_amount = -forward_amount % mod;
+		forward_amount = mod - reverse_amount;
+	}
+	if (forward_amount < reverse_amount) {
+		mix_right(node, forward_amount);
+	} else {
+		mix_left(node, reverse_amount);
+	}
 }
 
 int main(int argc, char *argv[]) {
