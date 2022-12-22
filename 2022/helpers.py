@@ -38,9 +38,12 @@ def lines_to_numbers(lines: list[str]) -> list[list[int]]:
 def transpose_array_of_strings(aos: list[str], reverse_x = False, reverse_y = False, strip = '') -> list[str]:
 	return [''.join(l[i] for l in aos[::-1 if reverse_y else 1]).strip(strip) for i in range(len(aos[0]))[::-1 if reverse_x else 1]]
 
-def read_day(day: int) -> str:
+def read_day(day: int, strip=True) -> str:
 	with open(f'input/{day:02}', 'r') as file:
-		return file.read().strip()
+		if strip:
+			return file.read().strip()
+		else:
+			return file.read()
 
 def print_time(name: str, ns: int):
 	print(f'{name} took {ns}ns = {ns/1000000:.2f}ms')
