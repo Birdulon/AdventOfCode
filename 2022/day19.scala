@@ -1,5 +1,6 @@
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
 
 val inputLines = scala.io.Source.fromFile("input/19").getLines.toArray
@@ -24,8 +25,8 @@ def blueprintQuality(line: String, tMax: Int=24): (Int, Int, Int) =
 
 	val max_cost_ore = cost_orebot_ore max cost_claybot_ore max cost_obsbot_ore max cost_geodebot_ore
 
-	val maxPossibleInXMinutes = (0 to 32).toArray
-	for i <- 1 to 32 do
+	val maxPossibleInXMinutes = (0 to tMax).toArray
+	for i <- 1 to tMax do
 		maxPossibleInXMinutes(i) = maxPossibleInXMinutes(i-1) + i
 
 	def simStep(t: Int, numRobots: Array[Int], numRes: Array[Int], totalGeodes: Int=0, maxGeodes: Int=0): Int =
@@ -84,20 +85,7 @@ def blueprintQuality(line: String, tMax: Int=24): (Int, Int, Int) =
 	return (bp, mostGeodes, quality)
 
 @main def main() =
-	// val part1 = inputLines.map(blueprintQuality(_)(2)).sum
-	// println(s"Part 1: total quality score: $part1")
-	// val part2 = inputLines.take(3).map(blueprintQuality(_, 32)(1)).product
-	// println(s"Part 2: $part2")
-	val p2Futures = Future.sequence(inputLines.take(3).map(line => Future(blueprintQuality(line, 32)(1))))
+	val p2Futures = Future.sequence(inputLines.take(3).map(line => Future(blueprintQuality(line, 32)(1))))  // Start p2 first since p1 threads finish faster and there are only 3 p2 threads
 	val p1Futures = Future.sequence(inputLines.map(line => Future(blueprintQuality(line)(2))))
-	p1Futures.onComplete {
-		case Success(results) => println(s"Part 1: total quality score: ${results.sum}")
-		case Failure(e) => e.printStackTrace
-	}
-	p2Futures.onComplete {
-		case Success(results) => println(s"Part 2: ${results.product}")
-		case Failure(e) => e.printStackTrace
-	}
-	Thread.sleep(1000)
-	// val part2 = p2Futures.product
-	// println(s"Part 2: $part2")
+	println(s"Part 1: total quality score: ${Await.result(p1Futures, Duration.Inf).sum}")
+	println(s"Part 2: ${Await.result(p2Futures, Duration.Inf).product}")
