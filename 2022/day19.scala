@@ -1,3 +1,7 @@
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success}
+
 val inputLines = scala.io.Source.fromFile("input/19").getLines.toArray
 val sampleLines = """
 Blueprint 1: Each ore robot costs 4 ore. Each clay robot costs 2 ore. Each obsidian robot costs 3 ore and 14 clay. Each geode robot costs 2 ore and 7 obsidian.
@@ -76,11 +80,24 @@ def blueprintQuality(line: String, tMax: Int=24): (Int, Int, Int) =
 
 	val mostGeodes = simStep(0, Vector(1,0,0).toArray, Vector(0,0,0).toArray)
 	val quality = mostGeodes * bp
-	println(s"Blueprint $bp: most geodes $mostGeodes = quality score $quality")
+	println(s"Blueprint $bp at $tMax minutes: most geodes $mostGeodes = quality score $quality")
 	return (bp, mostGeodes, quality)
 
 @main def main() =
-	val part1 = inputLines.map(blueprintQuality(_)(2)).sum
-	println(s"Part 1: total quality score: $part1")
-	val part2 = inputLines.take(3).map(blueprintQuality(_, 32)(1)).product
-	println(s"Part 2: $part2")
+	// val part1 = inputLines.map(blueprintQuality(_)(2)).sum
+	// println(s"Part 1: total quality score: $part1")
+	// val part2 = inputLines.take(3).map(blueprintQuality(_, 32)(1)).product
+	// println(s"Part 2: $part2")
+	val p2Futures = Future.sequence(inputLines.take(3).map(line => Future(blueprintQuality(line, 32)(1))))
+	val p1Futures = Future.sequence(inputLines.map(line => Future(blueprintQuality(line)(2))))
+	p1Futures.onComplete {
+		case Success(results) => println(s"Part 1: total quality score: ${results.sum}")
+		case Failure(e) => e.printStackTrace
+	}
+	p2Futures.onComplete {
+		case Success(results) => println(s"Part 2: ${results.product}")
+		case Failure(e) => e.printStackTrace
+	}
+	Thread.sleep(1000)
+	// val part2 = p2Futures.product
+	// println(s"Part 2: $part2")
