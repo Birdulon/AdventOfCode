@@ -82,6 +82,40 @@ fourteen_found:
 	return std::pair<size_t, size_t>(four+2, fourteen+8);
 }
 
+
+std::pair<size_t, size_t> find_first_unique_runs_xor(std::vector<uint8_t> *s) {
+	size_t four = 0;
+	size_t fourteen = 0;
+	uint32_t masks[4096];
+	for (int i=0; i<4096; i++) {
+		masks[i] = 1 << ((*s)[i]-'a');
+	}
+	uint32_t bitset = 0;
+	for (int i = 0; i < 4; i++) {  // No old entries to remove
+		bitset ^= masks[i];
+	}
+	for (int i = 4; i < 4096; i++) {
+		bitset ^= masks[i];
+		bitset ^= masks[i-4];
+		if (std::popcount(bitset) >= 4) {
+			four = i;
+			break;
+		}
+	}
+	for (int i = four+1; i < four+11; i++) {  // No old entries to remove while readjusting base
+		bitset ^= masks[i];
+	}
+	for (int i = four+11; i < 4096; i++) {
+		bitset ^= masks[i];
+		bitset ^= masks[i-14];
+		if (std::popcount(bitset) >= 14) {
+			fourteen = i;
+			break;
+		}
+	}
+	return std::pair<size_t, size_t>(four, fourteen);
+}
+
 int main(int argc, char **argv) {
 	size_t iterations = 1000000;
 	auto filename = "input/6";
@@ -110,7 +144,8 @@ int main(int argc, char **argv) {
 	for (size_t i = 0; i<iterations; i++) {
 		// four = find_first_unique_run(&s, 4, 4);
 		// fourteen = find_first_unique_run(&s, 14, four);
-		auto result = find_first_unique_runs(&s);
+		// auto result = find_first_unique_runs(&s);
+		auto result = find_first_unique_runs_xor(&s);
 		four = result.first;
 		fourteen = result.second;
 	}

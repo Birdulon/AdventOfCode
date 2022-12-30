@@ -87,6 +87,39 @@ fn find_first_unique_runs(s: &Vec<u8>) -> (Int, Int) {
 	return (four+4, fourteen+8);
 }
 
+fn find_first_unique_runs_xor(s: &Vec<u8>) -> (Int, Int) {
+	let mut four: Int = 0;
+	let mut fourteen: Int = 0;
+	let mut masks: [u32; 4096] = [0; 4096];
+	for i in 0..4096 {
+		masks[i] = 1 << (s[i]-b'a');
+	}
+	let mut bitset: u32 = 0;
+	for i in 0..4 {  // No old entries to remove
+		bitset ^= masks[i];
+	}
+	for i in 4..4096 {
+		bitset ^= masks[i];
+		bitset ^= masks[i-4];
+		if bitset.count_ones() >= 4 {
+			four = i;
+			break;
+		}
+	}
+	for i in (four+1)..(four+11) {  // No old entries to remove while readjusting base
+		bitset ^= masks[i];
+	}
+	for i in (four+11)..4096 {
+		bitset ^= masks[i];
+		bitset ^= masks[i-14];
+		if bitset.count_ones() >= 14 {
+			fourteen = i;
+			break;
+		}
+	}
+	return (four, fourteen);
+}
+
 fn main() {
 	let mut filename = "input/6";
 	let mut iterations = 1_000_000;
@@ -105,7 +138,8 @@ fn main() {
 	for _ in 0..iterations {
 		// four = find_first_unique_run(&s, 4, 0);
 		// fourteen = find_first_unique_run(&s, 14, four);
-		(four, fourteen) = find_first_unique_runs(&s);
+		// (four, fourteen) = find_first_unique_runs(&s);
+		(four, fourteen) = find_first_unique_runs_xor(&s);
 	}
 	let duration = t0.elapsed();
 	let per_iteration = duration / iterations;
