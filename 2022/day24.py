@@ -53,7 +53,7 @@ def sim(lines):
 			seen_states.add(triple)
 			state_stack.append(triple)
 
-	best_time = 1_000_000
+	best_time = 1000
 	goal = (width-1, height)  # End position
 	print('Moving from start to end')
 	while state_stack:
@@ -74,7 +74,7 @@ def sim(lines):
 	p1 = best_time
 	state_stack = [(width-1, height, best_time)]
 	seen_states.clear()
-	best_time = 1_000_000
+	best_time = 10_000
 	goal = (0, -1)  # Starting position
 	print('Moving from end to start')
 	while state_stack:
@@ -95,7 +95,7 @@ def sim(lines):
 
 	state_stack = [(0,-1,best_time)]
 	seen_states.clear()
-	best_time = 1_000_000
+	best_time = 100_000
 	goal = (width-1, height)  # End position
 	print('Moving from start to end (2)')
 	while state_stack:
