@@ -40,9 +40,11 @@ def sim(lines):
 	seen_states = set()
 	state_stack = [(0,-1,0)]
 	def try_add_state(col: int, row: int, time: int):
-		if col < 0 or col >= width or row < -1 or row >= height:
+		if col < 0 or col >= width or row < -1 or row > height:
 			return
 		if row == -1 and col != 0:
+			return
+		if row == height and col != width-1:
 			return
 		if not position_free(col, row, time):
 			return
@@ -51,28 +53,67 @@ def sim(lines):
 			seen_states.add(triple)
 			state_stack.append(triple)
 
-	best_time = None
-	goal = (width-1, height)
-
+	best_time = 1_000_000
+	goal = (width-1, height)  # End position
+	print('Moving from start to end')
 	while state_stack:
 		col, row, t = state_stack.pop()
 		t1 = t + 1
-		goal_distance = goal[0]-col + goal[1]-row  # Manhattan distance
+		goal_distance = abs(goal[0]-col) + abs(goal[1]-row)  # Manhattan distance
 		if goal_distance == 1:  # we're right next to the goal! move there and end this trail
-			if best_time:
-				best_time = min(best_time, t1)
-			else:
-				best_time = t1
+			best_time = min(best_time, t1)
 			continue
-		if best_time and (t + goal_distance > best_time):
+		if t + goal_distance > best_time:
 			continue
-		try_add_state(col, row, t1)
 		try_add_state(col-1, row, t1)
 		try_add_state(col, row-1, t1)
+		try_add_state(col, row, t1)
 		try_add_state(col+1, row, t1)
 		try_add_state(col, row+1, t1)
 
-	return best_time
+	p1 = best_time
+	state_stack = [(width-1, height, best_time)]
+	seen_states.clear()
+	best_time = 1_000_000
+	goal = (0, -1)  # Starting position
+	print('Moving from end to start')
+	while state_stack:
+		col, row, t = state_stack.pop()
+		t1 = t + 1
+		goal_distance = abs(goal[0]-col) + abs(goal[1]-row)  # Manhattan distance
+		if goal_distance == 1:  # we're right next to the goal! move there and end this trail
+			best_time = min(best_time, t1)
+			continue
+		if t + goal_distance > best_time:
+			continue
+		try_add_state(col+1, row, t1)
+		try_add_state(col, row+1, t1)
+		try_add_state(col, row, t1)
+		try_add_state(col-1, row, t1)
+		try_add_state(col, row-1, t1)
+
+
+	state_stack = [(0,-1,best_time)]
+	seen_states.clear()
+	best_time = 1_000_000
+	goal = (width-1, height)  # End position
+	print('Moving from start to end (2)')
+	while state_stack:
+		col, row, t = state_stack.pop()
+		t1 = t + 1
+		goal_distance = abs(goal[0]-col) + abs(goal[1]-row)  # Manhattan distance
+		if goal_distance == 1:  # we're right next to the goal! move there and end this trail
+			best_time = min(best_time, t1)
+			continue
+		if t + goal_distance > best_time:
+			continue
+		try_add_state(col-1, row, t1)
+		try_add_state(col, row-1, t1)
+		try_add_state(col, row, t1)
+		try_add_state(col+1, row, t1)
+		try_add_state(col, row+1, t1)
+
+	return p1, best_time
 
 print(sim(sample_lines))
 print(sim(lines))
