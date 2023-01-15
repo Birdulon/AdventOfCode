@@ -30,15 +30,10 @@ def dfs(input_nums: list[int], num_groups: int = 3):
 		return False
 
 	stack = [{x} for x in input_nums]
-	evaluated = set()
 	while stack:
 		if len(stack)>1000:
 			print(f'Stack size is {len(stack)}')
 		group_1 = stack.pop()
-		g1 = tuple(sorted(group_1))
-		if g1 in evaluated:
-			continue
-		evaluated.add(g1)
 
 		num_packages = len(group_1)
 		if best and best[0] < num_packages:
@@ -54,7 +49,10 @@ def dfs(input_nums: list[int], num_groups: int = 3):
 				best = (num_packages, quantum_entanglement, group_1)
 				print(best)
 		else:  # delta > 0
+			min_package = min(group_1)
 			for x in sorted(diff):
+				if x > min_package:
+					break
 				stack.append(group_1 | {x})
 	return best
 
